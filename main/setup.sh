@@ -77,6 +77,7 @@ fi
 if is_xanmod_installed; then
     echo "Running Xanmod kernel. Proceeding..."
     sudo depmod -a
+    sudo rm -rf -r /etc/sysctl.conf
     sudo bash -c 'cat >> /etc/sysctl.conf' <<EOF
 net.core.default_qdisc=fq
 net.ipv4.tcp_congestion_control=bbr
@@ -137,23 +138,27 @@ services:
       - /var/lib/marzban:/var/lib/marzban
 EOF
 
-# Request user input for ssl_client_cert.pem
-echo "Please enter the content for /var/lib/marzban-node/ssl_client_cert.pem:"
-read -r ssl_cert_content
-echo "$ssl_cert_content" | sudo tee /var/lib/marzban-node/ssl_client_cert.pem > /dev/null
-
-# Start Marzban-node
-cd ~/Marzban-node
-sudo docker compose down --remove-orphans
-sudo docker compose up -d
+# Request user input for SSL client certificate
+echo "Please enter your SSL client certificate:"
+ssl_cert=""
+while IFS= read -r line; do
+    ssl_cert+="$line"$'\n'
+    if [[ "$line" == "-----END CERTIFICATE-----" ]]; then
+        break
+    fi
+done
+echo -n "$ssl_cert" | sudo tee /etc/ssl/certs/ssl_client_cert.pem > /dev/null
 
 # Download geo files
+rm -rf -r /var/lib/marzban/assets/geoip.dat
+rm -rf -r /var/lib/marzban/assets/geosite.dat
 mkdir -p /var/lib/marzban/assets/
 wget -O /var/lib/marzban/assets/geoip.dat https://github.com/Chocolate4U/Iran-v2ray-rules/releases/download/202407210443/geoip.dat
 wget -O /var/lib/marzban/assets/geosite.dat https://github.com/Chocolate4U/Iran-v2ray-rules/releases/download/202407210443/geosite.dat
 
 # Update xray-core
 sudo apt install wget unzip -y
+rm -rf -r /var/lib/marzban/xray-core/
 mkdir -p /var/lib/marzban/xray-core && cd /var/lib/marzban/xray-core
 wget https://github.com/XTLS/xray-core/releases/latest/download/Xray-linux-64.zip
 unzip Xray-linux-64.zip
@@ -205,7 +210,6 @@ EOF
 sudo systemctl restart nginx
 
 # Final update and reboot
-sleep 30
-sudo apt-get update && sudo apt-get upgrade -y && sudo reboot
-
+sleep 10
 echo "All steps completed successfully."
+sudo apt-get update && sudo apt-get upgrade -y && sudo reboot
