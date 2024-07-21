@@ -1,5 +1,4 @@
 #!/bin/bash
-
 # Welcome message
 echo "------------------------------------------"
 echo "Welcome to the Xanmod Kernel and Marzban Node Setup Script!"
@@ -12,6 +11,13 @@ echo "Prepared and customized by w0l4i for personal use to install and set up"
 echo "Marzban Node along with Nginx, Xanmod kernel, BBR v3, and various"
 echo "system and kernel optimizations for optimal performance."
 echo "------------------------------------------"
+
+# Set DNS
+echo "Setting DNS..."
+sudo bash -c 'cat > /etc/resolv.conf' <<EOF
+nameserver 8.8.8.8
+nameserver 1.1.1.1
+EOF
 
 # Ensure we are running the script as root
 if [[ "$EUID" -ne 0 ]]; then
@@ -120,6 +126,8 @@ services:
     restart: always
     network_mode: host
     environment:
+      SERVICE_PORT: 5050
+      XRAY_API_PORT: 5051
       SSL_CLIENT_CERT_FILE: "/var/lib/marzban-node/ssl_client_cert.pem"
       SERVICE_PROTOCOL: "rest"
       XRAY_EXECUTABLE_PATH: "/var/lib/marzban/xray-core/xray"
