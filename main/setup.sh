@@ -147,7 +147,7 @@ while IFS= read -r line; do
         break
     fi
 done
-echo -n "$ssl_cert" | sudo tee /etc/ssl/certs/ssl_client_cert.pem > /dev/null
+echo -n "$ssl_cert" | sudo tee /var/lib/marzban-node/ssl_client_cert.pem > /dev/null
 
 # Download geo files
 rm -rf -r /var/lib/marzban/assets/geoip.dat
