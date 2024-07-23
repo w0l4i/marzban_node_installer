@@ -173,39 +173,25 @@ sudo docker compose up -d
 sudo apt-get install nginx -y
 sudo rm -rf /etc/nginx/sites-available/default
 sudo bash -c 'cat > /etc/nginx/sites-available/default' <<EOF
-server {
-    listen 8080 default_server;
-    server_name default_server;
-
-    location ~ ^/blogkjhHSJFDHjklhsajdf25432/(.+)/api/?$ {
-        proxy_redirect off;
-        rewrite .* / break;
-        proxy_pass http://127.0.0.1:14000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade \$http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_set_header Host \$http_host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-    }
-}
 
 server {
     listen 80 default_server;
+    listen [::]:80 default_server;
     server_name default_server;
 
-    location ~ ^/login/(.+)/north/?$ {
+    location ~ ^/(profile/gold_melted_wholesale|login/.+/north)/?$ {
         proxy_redirect off;
         rewrite .* / break;
         proxy_pass http://127.0.0.1:6000;
         proxy_http_version 1.1;
-        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection "upgrade";
-        proxy_set_header Host \$http_host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+        proxy_set_header Host $http_host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
     }
 }
+
 EOF
 sudo systemctl restart nginx
 
